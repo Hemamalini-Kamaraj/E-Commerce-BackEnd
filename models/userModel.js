@@ -48,22 +48,6 @@ const userSchema = new mongoose.Schema({
   resetToken: {
     type: String,
   },
-  verified: {
-    type: Boolean,
-    default: false,
-  },
-  shippingAddress: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Address",
-    },
-  ],
-  orderItems: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "OrderItems",
-    },
-  ],
 });
 
 module.exports = mongoose.model("User", userSchema, "users");

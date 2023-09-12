@@ -22,11 +22,11 @@ const userController = {
     }
 
     // return error if the user doen not verified their account
-    if (!user.verified) {
-      return res
-        .status(401)
-        .json({ message: "User does not verified the account" });
-    }
+    // if (!user.verified) {
+    //   return res
+    //     .status(401)
+    //     .json({ message: "User does not verified the account" });
+    // }
 
     // check if the password is correct
     const isAuthenticated = await bcrypt.compare(password, user.password);
@@ -72,12 +72,6 @@ const userController = {
         return res.status(409).json({ message: "User already exits" });
       }
 
-      const randomString =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-
-      const accVerificationLink = `https://merry-pixie-65f0af.netlify.app/users/acc-verification/${randomString}`;
-
       // check if the password is correct
       const hasedPassword = await bcrypt.hash(password, 10);
 
@@ -87,7 +81,6 @@ const userController = {
         mobileNo,
         AltNo,
         password: hasedPassword,
-        resetToken: randomString,
         recipientName,
         addressLine1,
         city,
@@ -98,57 +91,12 @@ const userController = {
 
       await newUser.save();
 
-      //   email authentication
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: EMAIL_ADDRESS,
-          pass: EMAIL_PASSWORD,
-        },
-      });
-
-      //   sendind email to rest the password
-      const sendMail = async () => {
-        const info = await transporter.sendMail({
-          from: `"Hemamalini Kamaraj" <${EMAIL_ADDRESS}>`,
-          to: email,
-          subject: "Account Verification",
-          text: `Kindly use this link to verify your account - ${accVerificationLink}`,
-        });
-      };
-
-      sendMail();
-
       res.status(201).json({
         message:
           "User created successfully.Kindly activate your account. Please verify your email!",
       });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
-    }
-  },
-
-  accountActivation: async (req, res) => {
-    try {
-      const resetToken = req.params.id;
-
-      const matchedUser = await userModel.findOne({ resetToken });
-
-      if (matchedUser === null) {
-        return res
-          .status(400)
-          .json({ message: "Account activation link expired" });
-      }
-
-      matchedUser.verified = true;
-      matchedUser.resetToken = "";
-
-      await userModel.findByIdAndUpdate(matchedUser.id, matchedUser);
-      res.status(201).json({
-        message: "account verified sucessfully.. kindly visit the login page",
-      });
-    } catch (error) {
-      return res.status(400).json({ Err: "Account activation link expired" });
     }
   },
 
